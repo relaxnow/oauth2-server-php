@@ -2,11 +2,14 @@
 
 namespace OAuth2\Controller;
 
+use OAuth2\OpenID\ResponseType\IdToken;
 use OAuth2\ResponseType\AccessTokenInterface;
 use OAuth2\ClientAssertionType\ClientAssertionTypeInterface;
 use OAuth2\GrantType\GrantTypeInterface;
 use OAuth2\ScopeInterface;
 use OAuth2\Scope;
+use OAuth2\ServerBundle\Storage\PublicKey;
+use OAuth2\ServerBundle\Storage\UserClaims;
 use OAuth2\Storage\ClientInterface;
 use OAuth2\RequestInterface;
 use OAuth2\ResponseInterface;
@@ -199,7 +202,19 @@ class TokenController implements TokenControllerInterface
             $requestedScope = $defaultScope;
         }
 
-        return $grantType->createAccessToken($this->accessToken, $clientId, $grantType->getUserId(), $requestedScope);
+        $token = $grantType->createAccessToken($this->accessToken, $clientId, $grantType->getUserId(), $requestedScope);
+
+        $idToken = new IdToken(
+            new UserClaims(),
+            new PublicKey(),
+            ['issuer' => 'http://qixi.dev.surfconext.nl']
+        );
+        $token['id_token'] = $idToken->createIdToken(
+            $clientId,
+            ['user_id' => $grantType->getUserId()]
+        );
+
+        return $token;
     }
 
     /**
