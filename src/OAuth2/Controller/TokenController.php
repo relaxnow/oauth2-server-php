@@ -98,6 +98,7 @@ class TokenController implements TokenControllerInterface
             return null;
         }
 
+        /** @var GrantTypeInterface $grantType */
         $grantType = $this->grantTypes[$grantTypeIdentifier];
 
         /**
